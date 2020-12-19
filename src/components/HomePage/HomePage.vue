@@ -33,7 +33,8 @@
           :key="ele.id"
           :class="i === 1 && 'border'"
         >
-          {{ ele.date }} {{ ele.time }}
+          <span>{{ ele.date }} {{ ele.time }}</span>
+          <span>{{ ele.hg_time }}</span>
         </div>
       </div>
       <div class="content_3">
@@ -81,10 +82,10 @@
                   clearable
                 >
                   <template #prefix>
-                  <div style="background:transparent;color:#ff9800;">
-                    <i>投</i>
-                  </div>
-                </template>
+                    <div style="background: transparent; color: #ff9800">
+                      <i>投</i>
+                    </div>
+                  </template>
                 </el-input>
               </span>
             </span>
@@ -98,45 +99,32 @@
           v-for="(ele, i) in item"
           :key="ele.id"
           :class="i === 1 && 'border'"
-          :style="{ flexDirection: 'column' }"
+          :style="{ flexDirection: 'column', height: '144px' }"
         >
-          <div
-            v-if="index === 0"
-            v-for="n in 4"
-            :key="n"
-            class="border"
-            style="height: 36px"
-          >
-            <span>
-              <span class="red_span" v-if="parseInt(ele.fixedodds) < 0">
-                <span>买入</span>
+          <div v-for="n in ele.hg_count" :key="n" class="border">
+            <div
+              v-if="ele[`hg_h_${n}`]"
+              :style="{
+                background:
+                  (showTextOrBg(ele, n, 'h') || showTextOrBg(ele, n, 'a')) &&
+                  '#feffd1',
+              }"
+            >
+              <span>
+                <span class="red_span" v-if="showTextOrBg(ele, n, 'h')">
+                  <span>买入</span>
+                </span>
+                让胜:{{ ele[`hg_h_${n}`] }}
               </span>
-              让胜:{{ ele.hg_h }}
-            </span>
-            <span>
-              <span class="red_span" v-if="parseInt(ele.fixedodds) > 0">
-                <span>买入</span>
+              <span>
+                <span class="red_span" v-if="showTextOrBg(ele, n, 'a')">
+                  <span>买入</span>
+                </span>
+                让负:{{ ele[`hg_a_${n}`] }}
               </span>
-              让负:{{ ele.hg_a }}
-            </span>
-            <span>买入:10000元</span>
-            <span>买中23432元</span>
-          </div>
-          <div v-else>
-            <span>
-              <span class="red_span" v-if="parseInt(ele.fixedodds) < 0">
-                <span>买入</span>
-              </span>
-              让胜:{{ ele.hg_h }}
-            </span>
-            <span>
-              <span class="red_span" v-if="parseInt(ele.fixedodds) > 0">
-                <span>买入</span>
-              </span>
-              让负:{{ ele.hg_a }}
-            </span>
-            <span>买入:10000元</span>
-            <span>买中23432元</span>
+              <span>买入:10000元</span>
+              <span>买中23432元</span>
+            </div>
           </div>
         </div>
       </div>
@@ -165,11 +153,30 @@ export default {
       const { data } = await getTotalGames();
       console.log("比赛数据", data);
       data.data.forEach((item) => {
+        item.bet_money = 2;
         item.forEach((ele) => {
+          // let thisKey = parseInt(ele.fixedodds)>
+          let keys = Object.keys(ele);
+          let keysH = keys
+            .map((k) => k.startsWith("hg_h") && ele[k])
+            .filter(Boolean);
+          let keysA = keys
+            .map((k) => k.startsWith("hg_a") && ele[k])
+            .filter(Boolean);
           ele.color = totalColors.get(ele.l_cn_abbr);
+          ele.hg_max_h = Math.max(...keysH);
+          ele.hg_max_a = Math.max(...keysA);
+          ele.hg_count = keysH.length;
+          // console.log(keysH, keysA, Math.max(...keysA));
         });
+        let total = item.reduce((total, ele) => {
+          return parseInt(ele.fixedodds) > 0
+            ? total + ele.h * 1 + ele.hg_max_a * 1
+            : total + ele.a * 1 + ele.hg_max_h * 1;
+        }, 0);
+        item.total_index = total.toFixed(2);
       });
-      totalGames.value = data.data;
+      totalGames.value = data.data.sort((a,b)=>b.total_index - a.total_index);
     };
     getTotalGames_();
     onMounted(() => {
@@ -184,12 +191,23 @@ export default {
         return parseInt(ele.fixedodds) > 0 ? ele.h : ele.a;
       });
       let money = isNaN(Number(item.bet_money)) ? 0 : Number(item.bet_money);
-      return ((num1 * num2 - 1) * money).toFixed(2);
+      return (num1 * num2 * money).toFixed(2);
+    };
+    // 判断是否显示皇冠买入 和背景
+    const showTextOrBg = (ele, n, key) => {
+      let thisOne =
+        key === "h" ? parseInt(ele.fixedodds) < 0 : parseInt(ele.fixedodds) > 0;
+      let thisData =
+        key === "h"
+          ? ele.hg_max_h == ele[`hg_h_${n}`]
+          : ele.hg_max_a == ele[`hg_a_${n}`];
+      return thisOne && thisData;
     };
     return {
       count,
       totalGames,
       computedMoney,
+      showTextOrBg,
     };
   },
 };
@@ -300,10 +318,12 @@ $same_1px_border: 1px solid $same_border_color;
     }
     .content_4 {
       font-size: 12px;
+      background: $same_border_color;
+      grid-gap: 10px;
       div {
         flex-direction: row;
         span {
-          flex-grow: 1;
+          width: 25%;
         }
         & > span:last-child {
           border-left: $same_1px_border;

@@ -56,7 +56,7 @@ module.exports = {
         port: 8888, // 端口号
         // host: "localhost",
         https: false,// http:{type:Boolean}
-        open: false, //配置自动启动浏览器
+        open: true, //配置自动启动浏览器
         proxy: {
             "/cp": {
                 target: "http://118.31.42.0:8080",
