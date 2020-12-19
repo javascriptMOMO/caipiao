@@ -14,7 +14,7 @@
           :key="ele.id"
           :class="i === 1 && 'border'"
         >
-          {{ ele.id / 100 }}%
+          {{ ele.total_index }}
         </div>
       </div>
       <div class="content_1">
