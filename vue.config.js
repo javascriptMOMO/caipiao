@@ -1,7 +1,6 @@
 const path = require("path");
 const resolve = dir => path.join(__dirname, dir);
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
-
+const TerserPlugin = require('terser-webpack-plugin');
 module.exports = {
     // 基本路径
     publicPath: "./",
@@ -17,27 +16,23 @@ module.exports = {
             .set('api', resolve('src/apis'))
             .set('coms', resolve('src/components'))
             .set('tool', resolve('src/tool'))
+            .set('assets', resolve('src/assets'))
     },
     // 生产版本取出console调试信息
     configureWebpack: config => {
         if (process.env.NODE_ENV === "production") {
             config.plugins.push(
-                new UglifyJsPlugin({
-                    uglifyOptions: {
-                        // 删除注释
-                        output: {
-                            comments: false
-                        },
+                new TerserPlugin({
+                    terserOptions: {
+                        parallel: true,//使用多进程提高构建速度
                         warnings: false,
                         compress: {
                             drop_debugger: true, // console
                             drop_console: true,
                             pure_funcs: ["console.log"] // 移除console
-                        }
+                        },
                     },
-                    sourceMap: false,
-                    parallel: true,//使用多进程提高构建速度
-                })
+                }),
             );
         }
         // config.devtool('source-map');
@@ -62,7 +57,16 @@ module.exports = {
         // host: "localhost",
         https: false,// http:{type:Boolean}
         open: false, //配置自动启动浏览器
-        // proxy: dataType === 'public_data' ? publicProxy : personalProxy,
+        proxy: {
+            "/cp": {
+                target: "http://118.31.42.0:8080",
+                ws: true,
+                changeOrigin: true,
+                pathRewrite: {
+                    "^/cp": ""
+                }
+            }
+        }
     },
     // devtool:'source-map',
 };

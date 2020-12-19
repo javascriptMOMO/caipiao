@@ -1,11 +1,14 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory,START_LOCATION } from 'vue-router'
 import Home from '../views/Home.vue'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
+    meta:{
+      title:'体彩小工具'
+    }
   },
   {
     path: '/about',
@@ -21,5 +24,8 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes
 })
-
+router.beforeEach((to,from)=>{
+  console.log(to,from,START_LOCATION)
+  if(to.meta.title)document.title = to.meta.title;
+})
 export default router

@@ -1,7 +1,9 @@
 <template>
   <div class="home">
     <div>
-      <home-page />
+      <keep-alive>
+        <home-page />
+      </keep-alive>
     </div>
   </div>
 </template>
@@ -11,7 +13,7 @@ import { defineAsyncComponent } from "vue";
 export default {
   name: "Home",
   components: {
-    homePage: defineAsyncComponent(()=>import('coms/HomePage.vue')),
+    homePage: defineAsyncComponent(() => import("coms/HomePage/HomePage.vue")),
   },
 };
 </script>
