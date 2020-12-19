@@ -14,7 +14,7 @@
           :key="ele.id"
           :class="i === 1 && 'border'"
         >
-          {{ ele.total_index }}
+          {{ item.total_index }}
         </div>
       </div>
       <div class="content_1">
