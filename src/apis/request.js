@@ -1,11 +1,11 @@
 import axios from "axios";
 console.log('&&&&&&&&&&&&&&&&&&&&&&', process.env.VUE_APP_ZHAOTEST)
 console.log('&&&&&&&&&&&&&&&&&&&&&&=======================')
-const URL = 'https://tulong.maxxiang.com';
+const URL = 'http://maxxiang.com';
 // 创建axios实例
 const service = axios.create({
     baseURL: process.env.NODE_ENV === "production" ? URL : "cp",
-    timeout: 150000
+    timeout: 150000,
 });
 window.axiosPromiseList = [];//用来存放所有请求的数组
 service.interceptors.response.use(
