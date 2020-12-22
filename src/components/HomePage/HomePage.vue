@@ -12,7 +12,9 @@
         <div class="content_1">
           <div style="border: 1px solid #dcdcdc">
             <span style="display: flex; flex-direction: column">
-              <span>方案{{ (currentPage*pageSize+index)-pageSize+1 }}</span>
+              <span
+                >方案{{ currentPage * pageSize + index - pageSize + 1 }}</span
+              >
               <span>{{ item.total_index }}</span>
             </span>
           </div>
@@ -179,7 +181,13 @@
       </div>
     </div>
     <div class="page">
-      <el-pagination background layout="prev, pager, next" @current-change="pageChange" :page-size="pageSize" :total="totalPage">
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        @current-change="pageChange"
+        :page-size="pageSize"
+        :total="totalPage"
+      >
       </el-pagination>
     </div>
   </div>
@@ -197,18 +205,21 @@ import {
 import { getTotalGames } from "api/mainApi.js";
 import { totalColors } from "assets/colors/color.js";
 import { useRouter } from "vue-router";
-import { ElLoading } from 'element-plus';
+import { ElLoading } from "element-plus";
 export default {
   setup(props, ctx) {
     console.log("进入页面");
     const router = useRouter();
     const money = 1000; //默认输入的金额
-    const pageSize = 50;//每页展示的条数
-    let totalPage = ref(0);//总共有多少数据
+    const pageSize = 50; //每页展示的条数
+    let totalPage = ref(0); //总共有多少数据
     let totalGames = ref([]); //所有的比赛数据信息
-    let thisPageGames=ref([]);//当前页的数据
-    let currentPage = ref([1]);//默认在第一页
-    let pageLoad = ElLoading.service({fullscreen:true,text:'努力计算中...请稍等...'});
+    let thisPageGames = ref([]); //当前页的数据
+    let currentPage = ref([1]); //默认在第一页
+    let pageLoad = ElLoading.service({
+      fullscreen: true,
+      text: "努力计算中...请稍等...",
+    });
     // 获取所有的比赛信息
     const getTotalGames_ = async () => {
       const { data } = await getTotalGames();
@@ -242,18 +253,24 @@ export default {
           // console.log(keysH, Math.max(...keysH));
           // console.log(keysA, Math.max(...keysA));
         });
+        // let total = item.reduce((total, ele) => {
+        //   return parseInt(ele.fixedodds) > 0
+        //     ? total + ele.h * 1 + ele.hg_max_a * 1
+        //     : total + ele.a * 1 + ele.hg_max_h * 1;
+        // }, 0);
         let total = item.reduce((total, ele) => {
           return parseInt(ele.fixedodds) > 0
-            ? total + ele.h * 1 + ele.hg_max_a * 1
-            : total + ele.a * 1 + ele.hg_max_h * 1;
-        }, 0);
+            ? total * ele.h * 1
+            : total * ele.a * 1;
+        },1);
+
         item.total_index = total.toFixed(2);
       });
       data.data.sort((a, b) => b.total_index - a.total_index);
-      totalPage.value = data.data.length;//总数据
+      totalPage.value = data.data.length; //总数据
       let pageData = sliceArr(data.data, pageSize);
       totalGames.value = pageData;
-      thisPageGames.value = pageData[0];//默认显示第一页
+      thisPageGames.value = pageData[0]; //默认显示第一页
     };
     getTotalGames_();
     onMounted(() => {
@@ -377,15 +394,15 @@ export default {
       return newList;
     };
     // 当前页发生变化
-    const pageChange = (page)=>{
-      console.log(page)
+    const pageChange = (page) => {
+      console.log(page);
       currentPage.value = page;
-      thisPageGames.value = totalGames.value[page-1]
-    }
+      thisPageGames.value = totalGames.value[page - 1];
+    };
     console.log(translateColor("#fff", 0.5));
     return {
       totalGames, //所有比赛数据
-      thisPageGames,//当前页展示的数据
+      thisPageGames, //当前页展示的数据
       computedMoney, //根据输入金额计算收益金额
       showTextOrBg, //控制是否显示买入文字
       translateColor, //将16进制颜色变为rgba格式
@@ -428,7 +445,7 @@ $same_fff: #fff;
       margin: 0;
     }
   }
-  .page{
+  .page {
     margin: 20px;
   }
   .title {
@@ -439,7 +456,7 @@ $same_fff: #fff;
     font-weight: bolder;
     font-size: 18px;
     background: #dcdcdc;
-    border-bottom:none ;
+    border-bottom: none;
     span {
       height: 100%;
       background: $same_fff;
