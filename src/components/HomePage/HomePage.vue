@@ -66,27 +66,41 @@
               </div>
               <div
                 class="border"
-                style="background: #feffd1"
-                :style="{ background: ele.alpha_color, fontSize: '14px' }"
+                v-for="(i, n) in ele.tc_count"
+                :key="n"
+                :style="{
+                  background: ele.alpha_color,
+                  boxShadow: n == 0 && 'inset 5px 0 #616161,0 -1px #fff',
+                  fontSize: '14px',
+                }"
               >
                 <span>
-                  <span class="red_span" v-if="parseInt(ele.fixedodds) > 0">
+                  <span
+                    class="red_span"
+                    v-if="n != 0 && parseInt(ele.fixedodds) > 0"
+                  >
                     <span>买入</span>
                   </span>
 
-                  让胜:{{ ele.h }}
+                  {{ n == 0 ? "胜" : "让胜" }}:{{ ele[`tc_h_${n}`] }}
                 </span>
-                <span>让平:{{ ele.d }}</span>
+                <span>{{ n == 0 ? "平" : "让平" }}:{{ ele[`tc_d_${n}`] }}</span>
                 <span>
-                  <span class="red_span" v-if="parseInt(ele.fixedodds) < 0">
+                  <span
+                    class="red_span"
+                    v-if="n != 0 && parseInt(ele.fixedodds) < 0"
+                  >
                     <span>买入</span>
                   </span>
-                  让负:{{ ele.a }}
+                  {{ n == 0 ? "负" : "让负" }}:{{ ele[`tc_a_${n}`] }}
                 </span>
               </div>
             </div>
           </div>
-          <div class="content_3_set" style="background: #fdf6ec">
+          <div class="content_3_total">
+            <span v-for="p in item.totalList" :key="p">{{p}}</span>
+          </div>
+          <div class="content_3_set">
             <span>
               <span>
                 <span>
@@ -120,15 +134,17 @@
             :class="i === 1 && 'border'"
             :style="{
               flexDirection: 'column',
-              height: '144px',
+              height: '200px',
               fontSize: '14px',
             }"
           >
-            <div v-for="n in ele.hg_count" :key="n" class="border">
+            <div v-for="(i, n) in ele.hg_count" :key="n" class="border">
               <div
                 class="content_4_div"
-                v-if="ele[`hg_h_${n}`]"
-                :style="{ background: ele.alpha_color }"
+                :style="{
+                  background: ele.alpha_color,
+                  boxShadow: n == 0 && 'inset 5px 0 #616161',
+                }"
               >
                 <div>
                   <div>
@@ -137,18 +153,23 @@
                         <span>买入</span>
                       </span>
                     </span>
-                    <span> 让胜:{{ ele[`hg_h_${n}`] }} </span>
+                    <span>
+                      {{ n == 0 ? "胜" : "让胜" }}:{{
+                        ele[`hg_h_${n}`] || "----"
+                      }}
+                    </span>
                     <span
                       class="position_span"
                       :style="{
                         visibility:
-                          showTextPositon(ele, n).show == 'left'
+                          n != 0 && showTextPositon(ele, n).show == 'left'
                             ? ''
                             : 'hidden',
                       }"
                       >{{ showTextPositon(ele, n).text }}</span
                     >
                   </div>
+                  <div v-if="n == 0">平:{{ ele[`hg_d_${n}`] }}</div>
                   <div>
                     <span
                       class="position_span"
@@ -160,7 +181,11 @@
                       }"
                       >{{ showTextPositon(ele, n).text }}</span
                     >
-                    <span> 让负:{{ ele[`hg_a_${n}`] }} </span>
+                    <span>
+                      {{ n == 0 ? "负" : "让负" }}:{{
+                        ele[`hg_a_${n}`] || "----"
+                      }}
+                    </span>
                     <span style="text-align: left">
                       <span class="red_span" v-if="showTextOrBg(ele, n, 'a')">
                         <span>买入</span>
@@ -171,8 +196,8 @@
                 <div
                   v-if="showTextOrBg(ele, n, 'a') || showTextOrBg(ele, n, 'h')"
                 >
-                  <span>买入:{{ computedVar(item)[i] }}元</span>
-                  <span>买中{{ computedBuy(item)[i] }}元</span>
+                  <span>买入:{{ computedVar(item)[n] }}元</span>
+                  <span>买中{{ computedBuy(item)[n] }}元</span>
                 </div>
               </div>
             </div>
@@ -247,9 +272,18 @@ export default {
           ele.color = totalColors.get(ele.l_cn_abbr);
           ele.hg_max_h = Math.max(...keysH);
           ele.hg_max_a = Math.max(...keysA);
-          ele.hg_count = keysH.length;
+          ele.hg_count = keys.map((k) => k.startsWith("hg_h")).filter(Boolean); //皇冠需要渲染的情况
+          ele.tc_count = keys.map((k) => k.startsWith("tc_h")).filter(Boolean); //体彩需要渲染得情况
+
           ele.var = parseInt(ele.fixedodds) > 0 ? ele.hg_max_a : ele.hg_max_h; //变量1
           item.alpha_color = ele.alpha_color = translateColor(ele.color, 0.2);
+          ele.tc_total_h = keys
+            .map((k) => k.startsWith("tc_h") && Number(ele[k]))
+            .filter(Boolean);
+          ele.tc_total_a = keys
+            .map((k) => k.startsWith("tc_a") && Number(ele[k]))
+            .filter(Boolean);
+
           // console.log(keysH, Math.max(...keysH));
           // console.log(keysA, Math.max(...keysA));
         });
@@ -258,14 +292,29 @@ export default {
         //     ? total + ele.h * 1 + ele.hg_max_a * 1
         //     : total + ele.a * 1 + ele.hg_max_h * 1;
         // }, 0);
-        let total = item.reduce((total, ele) => {
-          return parseInt(ele.fixedodds) > 0
-            ? total * ele.h * 1
-            : total * ele.a * 1;
-        },1);
 
+        let total_h = item.reduce((total, ele) => {
+          return [...total, ...ele.tc_total_h];
+        }, []);
+        let total_a = item.reduce((total, ele) => {
+          return [...total, ...ele.tc_total_a];
+        }, []);
+        let totalList = [];
+        total_h.forEach((h) => {
+          total_a.forEach((a) => {
+            totalList.push((h * a).toFixed(2));
+          });
+        });
+        item.totalList = totalList.sort((a, b) => b - a); //取前四个最大的
+        // 根据前四个之和排序
+        let total = totalList.reduce((total, ele) => {
+          return parseInt(ele.fixedodds) > 0
+            ? total + ele * 1
+            : total + ele * 1;
+        }, 0);
         item.total_index = total.toFixed(2);
       });
+
       data.data.sort((a, b) => b.total_index - a.total_index);
       totalPage.value = data.data.length; //总数据
       let pageData = sliceArr(data.data, pageSize);
@@ -282,7 +331,7 @@ export default {
     // 根据输入金额计算毛获利
     const computedMoney = (item) => {
       const [num1, num2] = item.map((ele) => {
-        return parseInt(ele.fixedodds) > 0 ? ele.h : ele.a;
+        return parseInt(ele.fixedodds) > 0 ? ele.tc_h_1 : ele.tc_a_1;
       });
       let money = isNaN(Number(item.bet_money)) ? 0 : Number(item.bet_money);
       return {
@@ -344,7 +393,7 @@ export default {
     };
     // 判断显示倍率文字显示左边还是右边
     const showTextPositon = (ele, n) => {
-      let text = ele[`hg_fixedodds_${n}`],
+      let text = ele[`hg_fixedodds_${n}`] || "0",
         newText = text.includes("受") ? text.substring(1) : text;
       return {
         show: text && text.includes("受") ? "right" : "left",
@@ -513,14 +562,14 @@ $same_fff: #fff;
     }
     .content_3 {
       display: grid;
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 2fr 1fr 1fr;
       font-size: 12px;
       .content_3_div {
         border-right: $same_1px_border;
         .content_3_div_top {
           display: grid;
           grid-template-columns: 1fr;
-          grid-template-rows: 2fr 3fr;
+          grid-template-rows: 2fr 3fr 3fr;
           & > div:nth-child(1) {
             span:nth-child(1) {
               text-align: right;
@@ -540,6 +589,7 @@ $same_fff: #fff;
       .content_3_set {
         width: 100%;
         justify-self: center;
+        background: #fdf6ec;
         & > span {
           display: grid;
           grid-gap: 10px;
@@ -548,6 +598,9 @@ $same_fff: #fff;
           color: #ff9800;
           text-align: center;
         }
+      }
+      .content_3_total {
+        background: #eeeeee;
       }
     }
     .content_4 {
@@ -563,10 +616,10 @@ $same_fff: #fff;
       .content_4_div {
         display: grid;
         grid-template-columns: 2fr 1fr;
-        & > div:nth-child(1) {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-        }
+        // & > div:nth-child(1) {
+        //   display: grid;
+        //   grid-template-columns: 1fr 1fr;
+        // }
         .position_span {
           font-size: 12px;
           color: #e91e63;
