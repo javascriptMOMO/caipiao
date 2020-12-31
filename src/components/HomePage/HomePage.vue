@@ -9,195 +9,243 @@
     </div>
     <div>
       <div class="content" v-for="(item, index) in thisPageGames" :key="index">
-        <div class="content_1">
-          <div style="border: 1px solid #dcdcdc">
-            <span style="display: flex; flex-direction: column">
-              <span
-                >方案{{ currentPage * pageSize + index - pageSize + 1 }}</span
-              >
-              <span>{{ item.total_index }}</span>
-            </span>
+        <div
+          class="content_total"
+          v-for="(total, total_index) in item.total_tj"
+          :key="total_index"
+        >
+          <div class="content_1">
+            <div style="border: 1px solid #dcdcdc">
+              <span style="display: flex; flex-direction: column">
+                <span
+                  >方案{{ currentPage * pageSize + index - pageSize + 1 }}-{{
+                    total_index + 1
+                  }}</span
+                >
+                <span>{{ item.total_index }}</span>
+              </span>
+            </div>
           </div>
-        </div>
-        <div class="content_1">
-          <div
-            v-for="(ele, i) in item"
-            :key="ele.id"
-            :style="{ background: ele.color, color: ele.color && '#fff' }"
-            :class="i === 1 && 'border'"
-          >
-            {{ ele.l_cn_abbr }}
+          <div class="content_1">
+            <div
+              v-for="(ele, i) in item"
+              :key="ele.id"
+              :style="{ background: ele.color, color: ele.color && '#fff' }"
+              :class="i === 1 && 'border'"
+            >
+              {{ ele.l_cn_abbr }}
+            </div>
           </div>
-        </div>
-        <div class="content_2">
-          <div
-            v-for="(ele, i) in item"
-            :key="ele.id"
-            :class="i === 1 && 'border'"
-            :style="{ background: ele.alpha_color }"
-          >
-            <span>{{ ele.date }} {{ ele.time }}</span>
-            <span>{{ ele.hg_time }}</span>
-            <!-- class="link_span" -->
-            <span>
-              <el-link
-                :href="`https://www.okooo.com/soccer/match/${ele.matchid}/ah/`"
-                target="__blank"
-                >ok</el-link
-              >
-            </span>
-          </div>
-        </div>
-        <div class="content_3">
-          <div class="content_3_div">
+          <div class="content_2">
             <div
               v-for="(ele, i) in item"
               :key="ele.id"
               :class="i === 1 && 'border'"
-              class="content_3_div_top"
+              :style="{ background: ele.alpha_color }"
             >
-              <div :style="{ background: ele.alpha_color, fontSize: '18px' }">
-                <span>
-                  {{ ele.h_cn_abbr }}
-                  <span style="color: red">[{{ ele.fixedodds }}]</span>
-                </span>
-                <span>vs</span>
-                <span>{{ ele.a_cn_abbr }}</span>
-              </div>
-              <div
-                class="border"
-                v-for="(i, n) in ele.tc_count"
-                :key="n"
-                :style="{
-                  background: ele.alpha_color,
-                  boxShadow: n == 0 && 'inset 5px 0 #616161,0 -1px #fff',
-                  fontSize: '14px',
-                }"
-              >
-                <span>
-                  <span
-                    class="red_span"
-                    v-if="n != 0 && parseInt(ele.fixedodds) > 0"
-                  >
-                    <span>买入</span>
-                  </span>
-
-                  {{ n == 0 ? "胜" : "让胜" }}:{{ ele[`tc_h_${n}`] }}
-                </span>
-                <span>{{ n == 0 ? "平" : "让平" }}:{{ ele[`tc_d_${n}`] }}</span>
-                <span>
-                  <span
-                    class="red_span"
-                    v-if="n != 0 && parseInt(ele.fixedodds) < 0"
-                  >
-                    <span>买入</span>
-                  </span>
-                  {{ n == 0 ? "负" : "让负" }}:{{ ele[`tc_a_${n}`] }}
-                </span>
-              </div>
+              <span>{{ ele.date }} {{ ele.time }}</span>
+              <span>{{ ele.hg_time }}</span>
+              <span>
+                <el-link
+                  :href="`https://www.okooo.com/soccer/match/${ele.matchid}/ah/`"
+                  target="__blank"
+                  >ok</el-link
+                >
+              </span>
             </div>
           </div>
-          <div class="content_3_total">
-            <span v-for="p in item.totalList" :key="p">{{p}}</span>
-          </div>
-          <div class="content_3_set">
-            <span>
-              <span>
-                <span>
-                  <el-input
-                    v-model="item.bet_money"
-                    placeholder="输入金额"
-                    size="mini"
-                    clearable
-                  >
-                    <template #prefix>
-                      <div style="background: transparent; color: #ff9800">
-                        <i>投</i>
-                      </div>
-                    </template>
-                  </el-input>
-                </span>
-              </span>
-              <span>获利</span>
-              <span>{{ computedMoney(item).money }}元</span>
-              <span>净利润:{{ computedEarn(item) }}</span>
-              <span>1手回报率:{{ computedHuiBao(item, 1) }}%</span>
-              <span>2手回报率:{{ computedHuiBao(item, 2) }}%</span>
-              <span>3手回报率:{{ computedHuiBao(item, 3) }}%</span>
-            </span>
-          </div>
-        </div>
-        <div class="content_4">
-          <div
-            v-for="(ele, i) in item"
-            :key="ele.id"
-            :class="i === 1 && 'border'"
-            :style="{
-              flexDirection: 'column',
-              height: '200px',
-              fontSize: '14px',
-            }"
-          >
-            <div v-for="(i, n) in ele.hg_count" :key="n" class="border">
+          <div class="content_3">
+            <div class="content_3_div">
               <div
-                class="content_4_div"
-                :style="{
-                  background: ele.alpha_color,
-                  boxShadow: n == 0 && 'inset 5px 0 #616161',
-                }"
+                v-for="(ele, i) in item"
+                :key="ele.id"
+                :class="i === 1 && 'border'"
+                class="content_3_div_top"
               >
-                <div>
-                  <div>
-                    <span style="text-align: right">
-                      <span class="red_span" v-if="showTextOrBg(ele, n, 'h')">
-                        <span>买入</span>
-                      </span>
-                    </span>
-                    <span>
-                      {{ n == 0 ? "胜" : "让胜" }}:{{
-                        ele[`hg_h_${n}`] || "----"
-                      }}
-                    </span>
-                    <span
-                      class="position_span"
-                      :style="{
-                        visibility:
-                          n != 0 && showTextPositon(ele, n).show == 'left'
-                            ? ''
-                            : 'hidden',
-                      }"
-                      >{{ showTextPositon(ele, n).text }}</span
-                    >
-                  </div>
-                  <div v-if="n == 0">平:{{ ele[`hg_d_${n}`] }}</div>
-                  <div>
-                    <span
-                      class="position_span"
-                      :style="{
-                        visibility:
-                          showTextPositon(ele, n).show == 'right'
-                            ? ''
-                            : 'hidden',
-                      }"
-                      >{{ showTextPositon(ele, n).text }}</span
-                    >
-                    <span>
-                      {{ n == 0 ? "负" : "让负" }}:{{
-                        ele[`hg_a_${n}`] || "----"
-                      }}
-                    </span>
-                    <span style="text-align: left">
-                      <span class="red_span" v-if="showTextOrBg(ele, n, 'a')">
-                        <span>买入</span>
-                      </span>
-                    </span>
-                  </div>
+                <div :style="{ background: ele.alpha_color, fontSize: '18px' }">
+                  <span>
+                    {{ ele.h_cn_abbr }}
+                    <span style="color: red">[{{ ele.fixedodds }}]</span>
+                  </span>
+                  <span>vs</span>
+                  <span>{{ ele.a_cn_abbr }}</span>
                 </div>
                 <div
-                  v-if="showTextOrBg(ele, n, 'a') || showTextOrBg(ele, n, 'h')"
+                  class="border"
+                  v-for="(i, n) in ele.tc_count"
+                  :key="n"
+                  :style="{
+                    background: ele.alpha_color,
+                    boxShadow: n == 0 && 'inset 5px 0 #616161,0 -1px #fff',
+                    fontSize: '14px',
+                  }"
                 >
-                  <span>买入:{{ computedVar(item)[n] }}元</span>
-                  <span>买中{{ computedBuy(item)[n] }}元</span>
+                  <span>
+                    <!-- v-if="n != 0 && parseInt(ele.fixedodds) > 0" -->
+                    <span
+                      class="red_span"
+                      v-if="
+                        total.find(
+                          (t) => t.tc_buy == '胜' || t.tc_buy == '让胜'
+                        ) &&
+                        total.map((t) => t.tc_pl).includes(ele[`tc_h_${n}`])
+                      "
+                    >
+                      <span>买入</span>
+                    </span>
+                    {{ n == 0 ? "胜" : "让胜" }}:{{ ele[`tc_h_${n}`] }}
+                  </span>
+                  <span
+                    >{{ n == 0 ? "平" : "让平" }}:{{ ele[`tc_d_${n}`] }}</span
+                  >
+                  <span>
+                    <!-- v-if="n != 0 && parseInt(ele.fixedodds) < 0" -->
+                    <span
+                      class="red_span"
+                      v-if="
+                        total.find(
+                          (t) => t.tc_buy == '负' || t.tc_buy == '让负'
+                        ) &&
+                        total.map((t) => t.tc_pl).includes(ele[`tc_a_${n}`])
+                      "
+                    >
+                      <span>买入</span>
+                    </span>
+                    {{ n == 0 ? "负" : "让负" }}:{{ ele[`tc_a_${n}`] }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="content_3_set">
+              <span>
+                <span>
+                  <span>
+                    <el-input
+                      v-model="item.bet_money"
+                      placeholder="输入金额"
+                      size="mini"
+                      clearable
+                    >
+                      <template #prefix>
+                        <div style="background: transparent; color: #ff9800">
+                          <i>投</i>
+                        </div>
+                      </template>
+                    </el-input>
+                  </span>
+                </span>
+                <span>获利</span>
+                <!-- computedMoney(item).money  -->
+                <span>{{ totalComputedMoney(item, total) }}元</span>
+                <!-- computedEarn(item) -->
+                <span>净利润:{{ totalComputedEarn(item, total) }}</span>
+                <!-- computedHuiBao(item, 3) -->
+                <span>
+                  1手回报率:{{ totalComputedHuiBao(item, total, 1) }}%
+                </span>
+                <span>
+                  2手回报率:{{ totalComputedHuiBao(item, total, 2) }}%
+                </span>
+                <span>
+                  3手回报率:{{ totalComputedHuiBao(item, total, 3) }}%
+                </span>
+              </span>
+            </div>
+          </div>
+          <div class="content_4">
+            <div
+              v-for="(ele, item_i) in item"
+              :key="ele.id"
+              :class="item_i === 1 && 'border'"
+              :style="{
+                flexDirection: 'column',
+                height: '200px',
+                fontSize: '14px',
+              }"
+            >
+              <div v-for="(i, n) in ele.hg_count" :key="n" class="border">
+                <div
+                  class="content_4_div"
+                  :style="{
+                    background: ele.alpha_color,
+                    boxShadow: n == 0 && 'inset 5px 0 #616161',
+                    color: 'red',
+                  }"
+                >
+                  <div>
+                    <div>
+                      <span style="text-align: right">
+                        <!-- v-if="showTextOrBg(ele, n, 'h')" -->
+                        <span
+                          class="red_span"
+                          v-if="showTotalTJ(total, ele, item, n, 'h').show"
+                        >
+                          <span>买入</span>
+                        </span>
+                      </span>
+                      <span>
+                        {{ n == 0 ? "胜" : "让胜" }}:{{
+                          ele[`hg_h_${n}`] || "0.00"
+                        }}
+                      </span>
+                      <span
+                        class="position_span"
+                        :style="{
+                          visibility:
+                            n != 0 && showTextPositon(ele, n).show == 'left'
+                              ? ''
+                              : 'hidden',
+                        }"
+                        >{{ showTextPositon(ele, n).text }}</span
+                      >
+                    </div>
+                    <div v-if="n == 0">平:{{ ele[`hg_d_${n}`] }}</div>
+                    <div>
+                      <span
+                        class="position_span"
+                        :style="{
+                          visibility:
+                            showTextPositon(ele, n).show == 'right'
+                              ? ''
+                              : 'hidden',
+                        }"
+                        >{{ showTextPositon(ele, n).text }}</span
+                      >
+                      <span>
+                        {{ n == 0 ? "负" : "让负" }}:{{
+                          ele[`hg_a_${n}`] || "0.00"
+                        }}
+                      </span>
+                      <span style="text-align: left">
+                        <!-- v-if="showTextOrBg(ele, n, 'a')" -->
+                        <span
+                          class="red_span"
+                          v-if="showTotalTJ(total, ele, item, n, 'a').show"
+                        >
+                          <span>买入</span>
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    v-if="
+                      showTotalTJ(total, ele, item, n, 'h').show ||
+                      showTotalTJ(total, ele, item, n, 'a').show
+                    "
+                  >
+                    <!-- computedVar(item)[n] -->
+                    <span
+                      >买入:{{
+                        totalComputedVar(item, total, item_i, "mr")
+                      }}元</span
+                    >
+                    <!-- computedBuy(item)[n] total[item_i].total_mz -->
+                    <span
+                      >买中{{
+                        totalComputedVar(item, total, item_i, "mz")
+                      }}元</span
+                    >
+                  </div>
                 </div>
               </div>
             </div>
@@ -231,12 +279,13 @@ import { getTotalGames } from "api/mainApi.js";
 import { totalColors } from "assets/colors/color.js";
 import { useRouter } from "vue-router";
 import { ElLoading } from "element-plus";
+import Switch from "element-plus/lib/el-switch";
 export default {
   setup(props, ctx) {
     console.log("进入页面");
     const router = useRouter();
     const money = 1000; //默认输入的金额
-    const pageSize = 50; //每页展示的条数
+    const pageSize = 10; //每页展示的条数
     let totalPage = ref(0); //总共有多少数据
     let totalGames = ref([]); //所有的比赛数据信息
     let thisPageGames = ref([]); //当前页的数据
@@ -272,8 +321,12 @@ export default {
           ele.color = totalColors.get(ele.l_cn_abbr);
           ele.hg_max_h = Math.max(...keysH);
           ele.hg_max_a = Math.max(...keysA);
-          ele.hg_count = keys.map((k) => k.startsWith("hg_h")).filter(Boolean); //皇冠需要渲染的情况
-          ele.tc_count = keys.map((k) => k.startsWith("tc_h")).filter(Boolean); //体彩需要渲染得情况
+          ele.hg_count = keys.map((k) => k.startsWith("hg_h")).filter(Boolean); //皇冠需要渲染的情况数组
+          ele.tc_count = keys.map((k) => k.startsWith("tc_h")).filter(Boolean); //体彩需要渲染得情况情况数组
+          ele.tj_count = keys
+            .map((k) => k.startsWith("fangan") && ele[k])
+            .filter(Boolean)
+            .map((e) => JSON.parse(e)); //推荐方案需要渲染的情况数组
 
           ele.var = parseInt(ele.fixedodds) > 0 ? ele.hg_max_a : ele.hg_max_h; //变量1
           item.alpha_color = ele.alpha_color = translateColor(ele.color, 0.2);
@@ -287,35 +340,67 @@ export default {
           // console.log(keysH, Math.max(...keysH));
           // console.log(keysA, Math.max(...keysA));
         });
-        // let total = item.reduce((total, ele) => {
-        //   return parseInt(ele.fixedodds) > 0
-        //     ? total + ele.h * 1 + ele.hg_max_a * 1
-        //     : total + ele.a * 1 + ele.hg_max_h * 1;
-        // }, 0);
 
-        let total_h = item.reduce((total, ele) => {
-          return [...total, ...ele.tc_total_h];
-        }, []);
-        let total_a = item.reduce((total, ele) => {
-          return [...total, ...ele.tc_total_a];
-        }, []);
-        let totalList = [];
-        total_h.forEach((h) => {
-          total_a.forEach((a) => {
-            totalList.push((h * a).toFixed(2));
+        // let total_h = item.reduce((total, ele) => {
+        //   return [...total, ...ele.tc_total_h];
+        // }, []);
+        // let total_a = item.reduce((total, ele) => {
+        //   return [...total, ...ele.tc_total_a];
+        // }, []);
+        // let totalList = [];
+        // total_h.forEach((h) => {
+        //   total_a.forEach((a) => {
+        //     totalList.push((h * a).toFixed(2));
+        //   });
+        // });
+        // item.totalList = totalList.sort((a, b) => b - a); //取前四个最大的
+        // // 根据前四个之和排序
+        // let total = totalList.reduce((total, ele) => {
+        //   return parseInt(ele.fixedodds) > 0
+        //     ? total + ele * 1
+        //     : total + ele * 1;
+        // }, 0);
+        // item.total_index = total.toFixed(2);
+        // 整合推荐的每一项数据
+        let item_0 = item[0].tj_count;
+        let item_1 = item[1].tj_count;
+        let total_tj = [];
+        item_0.forEach((t0) => {
+          item_1.forEach((t1) => {
+            total_tj.push([t0, t1]);
           });
         });
-        item.totalList = totalList.sort((a, b) => b - a); //取前四个最大的
-        // 根据前四个之和排序
-        let total = totalList.reduce((total, ele) => {
-          return parseInt(ele.fixedodds) > 0
-            ? total + ele * 1
-            : total + ele * 1;
-        }, 0);
-        item.total_index = total.toFixed(2);
+        // console.log(total_tj)
+        total_tj.forEach((total) => {
+          let money = isNaN(Number(item.bet_money))
+            ? 0
+            : Number(item.bet_money);
+          total.forEach((t, ti) => {
+            let mrMoney = money / (t.hg_pl - 1), //需要买入
+              mzMoney = mrMoney * (t.hg_pl - 1) - money; //买中
+            // console.log("找到所有组合的某一项", thisOne);
+            t.total_mr = mrMoney.toFixed(2);
+            t.total_mz = mzMoney.toFixed(2);
+            t.total_tc_pl = total.reduce((tt, pre) => {
+              return (tt * pre.tc_pl).toFixed(2);
+            }, 1); //每一项体彩的赔率乘积
+            t.total_money =
+              total.reduce((m, pre) => {
+                return m + Number(pre.total_mr) + Number(pre.total_mz);
+              }, 0) + money;
+            let h = totalComputedHuiBao(item, t, 3);
+            total.total_index_3 = item.total_index_3 = h;
+          });
+        });
+
+        item.total_tj = total_tj.sort(
+          (a, b) => b.total_index_3 - a.total_index_3
+        );
+        let total_index_3_list = total_tj.map((t) => Number(t.total_index_3));
+        item.total_index_3_max = Math.max(...total_index_3_list);//没个大方案里最大的3手回报率
       });
 
-      data.data.sort((a, b) => b.total_index - a.total_index);
+      data.data.sort((a, b) => b.total_index_3_max - a.total_index_3_max);
       totalPage.value = data.data.length; //总数据
       let pageData = sliceArr(data.data, pageSize);
       totalGames.value = pageData;
@@ -390,6 +475,90 @@ export default {
           ? ele.hg_max_h == ele[`hg_h_${n}`]
           : ele.hg_max_a == ele[`hg_a_${n}`];
       return thisOne && thisData;
+    };
+    // 判断是否显示买入图标 或者计算买入 买中金额
+    /* 
+      total-->item项里属性total_tj 里的每一项  都是长度为2的数组
+      ele-->item里的每一项 是的对象
+      item-->最初始数据里的每一项 即为上面2个参数用到的item
+      n-->传递 过来的索引
+      key-->自定义 有h a 两种 用来判断是体彩还是皇冠  h为皇冠 a为体彩
+    */
+    const showTotalTJ = (total, ele, item, n, key) => {
+      let textH = total.find((t) => t.hg_buy == "胜" || t.hg_buy == "让胜"),
+        textA = total.find((t) => t.hg_buy == "负" || t.hg_buy == "让负"),
+        valueH = total.map((t) => t.hg_pl).includes(ele[`hg_h_${n}`]),
+        valueA = total.map((t) => t.hg_pl).includes(ele[`hg_a_${n}`]);
+      let checkValue = key === "h" ? valueH : valueA,
+        checkText = key === "h" ? textH : textA;
+      // let thisOne = total.find(
+      //   (t) => checkText && t.hg_pl == ele[`hg_${key}_${n}`]
+      // );
+      // if (thisOne) {
+      //   let money = isNaN(Number(item.bet_money)) ? 0 : Number(item.bet_money);
+      //   let mrMoney = money / (thisOne.hg_pl - 1), //需要买入
+      //     mzMoney = mrMoney * (thisOne.hg_pl - 1) - money; //买中
+      //   // console.log("找到所有组合的某一项", thisOne);
+      //   thisOne.total_mr = mrMoney.toFixed(2);
+      //   thisOne.total_mz = mzMoney.toFixed(2);
+      //   total.total_tc_pl = total.reduce((t, pre) => {
+      //     return (t * pre.tc_pl).toFixed(2);
+      //   }, 1); //每一项体彩的赔率乘积
+      //   total.total_money =
+      //     total.reduce((t, pre) => {
+      //       return t + Number(pre.total_mr) + Number(pre.total_mz);
+      //     }, 0) + money;
+      // }
+      return {
+        show: checkText && checkValue,
+      };
+    };
+    // 所有情况买入 买中金额
+    const totalComputedVar = (item, total, item_i, key) => {
+      let money = isNaN(Number(item.bet_money)) ? 0 : Number(item.bet_money);
+      total.forEach((t, ti) => {
+        let mrMoney = money / (t.hg_pl - 1), //需要买入
+          mzMoney = mrMoney * (t.hg_pl - 1) - money; //买中
+        // console.log("找到所有组合的某一项", thisOne);
+        total[`total_mr_${ti}`] = t.total_mr = mrMoney.toFixed(2);
+        total[`total_mz_${ti}`] = t.total_mz = mzMoney.toFixed(2);
+        total.total_tc_pl = total.reduce((t, pre) => {
+          return (t * pre.tc_pl).toFixed(2);
+        }, 1); //每一项体彩的赔率乘积
+        total.total_money =
+          total.reduce((t, pre, index) => {
+            return t + Number(pre.total_mr) + Number(pre.total_mz);
+          }, 0) + money;
+      });
+
+      return total[`total_${key}_${item_i}`];
+    };
+    // 所有情况体彩的获利奖金 毛利率
+    const totalComputedMoney = (item, total) => {
+      return (item.bet_money * total.total_tc_pl).toFixed(2);
+    };
+    // 所有情况1 2 3手回报率
+    const totalComputedHuiBao = (item, total, type) => {
+      switch (type) {
+        case 1:
+          return 0.0;
+        case 2:
+          return 0.0;
+        case 3:
+          return (
+            (item.bet_money * total.total_tc_pl - total.total_money) /
+            item.bet_money
+          ).toFixed(2);
+      }
+    };
+    // 所有情况组合的净利润
+    const totalComputedEarn = (item, total) => {
+      let bet_money = isNaN(Number(item.bet_money))
+        ? 0
+        : Number(item.bet_money); //投注金额
+      let money = totalComputedMoney(item, total),
+        benjin = total.total_money; //获利
+      return (money - bet_money - benjin).toFixed(2);
     };
     // 判断显示倍率文字显示左边还是右边
     const showTextPositon = (ele, n) => {
@@ -466,6 +635,11 @@ export default {
       totalPage,
       pageChange,
       currentPage,
+      showTotalTJ, //判断是否显示所有情况 买入图标
+      totalComputedMoney, //所有组合体彩获利 毛利
+      totalComputedHuiBao, //所有组合1 2 3手回报率
+      totalComputedEarn, //所有组合净利润
+      totalComputedVar, //所有组合买入 买中计算
     };
   },
 };
@@ -512,11 +686,13 @@ $same_fff: #fff;
     }
   }
   .content {
-    @include display_grid();
-    grid-template-rows: minmax($same_height, auto);
-    grid-gap: 1px;
-    margin-top: 10px;
-    font-size: 13px;
+    .content_total {
+      @include display_grid();
+      grid-template-rows: minmax($same_height, auto);
+      grid-gap: 1px;
+      margin-top: 10px;
+      font-size: 13px;
+    }
     // &:nth-child(odd) {
     //   background: $same_fff;
     // }
@@ -562,7 +738,7 @@ $same_fff: #fff;
     }
     .content_3 {
       display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
+      grid-template-columns: 2fr 1fr;
       font-size: 12px;
       .content_3_div {
         border-right: $same_1px_border;
@@ -598,9 +774,6 @@ $same_fff: #fff;
           color: #ff9800;
           text-align: center;
         }
-      }
-      .content_3_total {
-        background: #eeeeee;
       }
     }
     .content_4 {
