@@ -4,8 +4,48 @@
       <span>胜率</span>
       <span>名称</span>
       <span>场次/时间</span>
-      <span>体彩方案</span>
-      <span>皇冠方案</span>
+      <span class="tc_back_span">
+        <span>体彩方案</span>
+        <span>
+          <el-input
+            v-model="backMoney.tc_back_money"
+            placeholder="输入体彩返利"
+            size="mini"
+          >
+            <template #prefix>
+              <div style="background: transparent; color: #ff9800">
+                <i>返利</i>
+              </div>
+            </template>
+            <template #suffix>
+              <div style="background: transparent; color: #ff9800">
+                <i>%</i>
+              </div>
+            </template>
+          </el-input>
+        </span>
+      </span>
+      <span class="tc_back_span hg_back_span">
+        <span>皇冠方案</span>
+        <span>
+          <el-input
+            v-model="backMoney.hg_back_money"
+            placeholder="输入皇冠返利"
+            size="mini"
+          >
+            <template #prefix>
+              <div style="background: transparent; color: #ff9800">
+                <i>返利</i>
+              </div>
+            </template>
+            <template #suffix>
+              <div style="background: transparent; color: #ff9800">
+                <i>%</i>
+              </div>
+            </template>
+          </el-input>
+        </span>
+      </span>
     </div>
     <div>
       <div class="content" v-for="(item, index) in thisPageGames" :key="index">
@@ -136,19 +176,13 @@
                 </span>
                 <span>获利</span>
                 <!-- computedMoney(item).money  -->
-                <span>{{ totalComputedMoney(item, total) }}元</span>
+                <span>{{ total.huoli }}元</span>
                 <!-- computedEarn(item) -->
-                <span>净利润:{{ totalComputedEarn(item, total) }}</span>
+                <span>净利润:{{ total.jinglirun }}</span>
                 <!-- computedHuiBao(item, 3) -->
-                <span>
-                  1手回报率:{{ totalComputedHuiBao(item, total, 1) }}%
-                </span>
-                <span>
-                  2手回报率:{{ totalComputedHuiBao(item, total, 2) }}%
-                </span>
-                <span>
-                  3手回报率:{{ totalComputedHuiBao(item, total, 3) }}%
-                </span>
+                <span> 1手回报率:{{ 0 }}% </span>
+                <span> 2手回报率:{{ 0 }}% </span>
+                <span> 3手回报率:{{ total.total_index_33 }}% </span>
               </span>
             </div>
           </div>
@@ -234,17 +268,9 @@
                     "
                   >
                     <!-- computedVar(item)[n] -->
-                    <span
-                      >买入:{{
-                        totalComputedVar(item, total, item_i, "mr")
-                      }}元</span
-                    >
+                    <span>买入:{{ total[`total_mr_${item_i}`] }}元</span>
                     <!-- computedBuy(item)[n] total[item_i].total_mz -->
-                    <span
-                      >买中{{
-                        totalComputedVar(item, total, item_i, "mz")
-                      }}元</span
-                    >
+                    <span>买中{{ total[`total_mz_${item_i}`] }}元</span>
                   </div>
                 </div>
               </div>
@@ -269,6 +295,7 @@
 <script>
 import {
   ref,
+  reactive,
   onMounted,
   onUnmounted,
   watch,
@@ -290,6 +317,7 @@ export default {
     let totalGames = ref([]); //所有的比赛数据信息
     let thisPageGames = ref([]); //当前页的数据
     let currentPage = ref([1]); //默认在第一页
+    let backMoney = reactive({ tc_back_money: 12, hg_back_money: 2.5 }); //设置返利信息
     let pageLoad = ElLoading.service({
       fullscreen: true,
       text: "努力计算中...请稍等...",
@@ -307,7 +335,6 @@ export default {
         item.bet_money = money;
         let randomColorList = [];
         item.forEach((ele, index) => {
-          // let thisKey = parseInt(ele.fixedodds)>
           let keys = Object.keys(ele);
           let keysH = keys
             .map((k) => k.startsWith("hg_h") && ele[k])
@@ -341,26 +368,6 @@ export default {
           // console.log(keysA, Math.max(...keysA));
         });
 
-        // let total_h = item.reduce((total, ele) => {
-        //   return [...total, ...ele.tc_total_h];
-        // }, []);
-        // let total_a = item.reduce((total, ele) => {
-        //   return [...total, ...ele.tc_total_a];
-        // }, []);
-        // let totalList = [];
-        // total_h.forEach((h) => {
-        //   total_a.forEach((a) => {
-        //     totalList.push((h * a).toFixed(2));
-        //   });
-        // });
-        // item.totalList = totalList.sort((a, b) => b - a); //取前四个最大的
-        // // 根据前四个之和排序
-        // let total = totalList.reduce((total, ele) => {
-        //   return parseInt(ele.fixedodds) > 0
-        //     ? total + ele * 1
-        //     : total + ele * 1;
-        // }, 0);
-        // item.total_index = total.toFixed(2);
         // 整合推荐的每一项数据
         let item_0 = item[0].tj_count;
         let item_1 = item[1].tj_count;
@@ -372,35 +379,16 @@ export default {
         });
         // console.log(total_tj)
         total_tj.forEach((total) => {
-          let money = isNaN(Number(item.bet_money))
-            ? 0
-            : Number(item.bet_money);
-          total.forEach((t, ti) => {
-            let mrMoney = money / (t.hg_pl - 1), //需要买入
-              mzMoney = mrMoney * (t.hg_pl - 1) - money; //买中
-            // console.log("找到所有组合的某一项", thisOne);
-            t.total_mr = mrMoney.toFixed(2);
-            t.total_mz = mzMoney.toFixed(2);
-            t.total_tc_pl = total.reduce((tt, pre) => {
-              return (tt * pre.tc_pl).toFixed(2);
-            }, 1); //每一项体彩的赔率乘积
-            t.total_money =
-              total.reduce((m, pre) => {
-                return m + Number(pre.total_mr) + Number(pre.total_mz);
-              }, 0) + money;
-            let h = totalComputedHuiBao(item, t, 3);
-            total.total_index_3 = item.total_index_3 = h;
-          });
+          computedTotalTJ(item, total); //加工数据
         });
 
         item.total_tj = total_tj.sort(
-          (a, b) => b.total_index_3 - a.total_index_3
+          (a, b) => b.total_index_33 - a.total_index_33
         );
-        let total_index_3_list = total_tj.map((t) => Number(t.total_index_3));
-        item.total_index_3_max = Math.max(...total_index_3_list);//没个大方案里最大的3手回报率
+        let total_index_3_list = total_tj.map((t) => Number(t.total_index_33));
+        item.fuck = Math.max(...total_index_3_list);
       });
-
-      data.data.sort((a, b) => b.total_index_3_max - a.total_index_3_max);
+      data.data.sort((a, b) => b.fuck - a.fuck);
       totalPage.value = data.data.length; //总数据
       let pageData = sliceArr(data.data, pageSize);
       totalGames.value = pageData;
@@ -412,6 +400,13 @@ export default {
     });
     onUnmounted(() => {
       console.log("程序卸载成功");
+    });
+    watchEffect(() => {
+      thisPageGames.value.forEach((item) => {
+        item.total_tj.forEach((total) => {
+          computedTotalTJ(item, total);
+        });
+      });
     });
     // 根据输入金额计算毛获利
     const computedMoney = (item) => {
@@ -491,72 +486,22 @@ export default {
         valueA = total.map((t) => t.hg_pl).includes(ele[`hg_a_${n}`]);
       let checkValue = key === "h" ? valueH : valueA,
         checkText = key === "h" ? textH : textA;
-      // let thisOne = total.find(
-      //   (t) => checkText && t.hg_pl == ele[`hg_${key}_${n}`]
-      // );
-      // if (thisOne) {
-      //   let money = isNaN(Number(item.bet_money)) ? 0 : Number(item.bet_money);
-      //   let mrMoney = money / (thisOne.hg_pl - 1), //需要买入
-      //     mzMoney = mrMoney * (thisOne.hg_pl - 1) - money; //买中
-      //   // console.log("找到所有组合的某一项", thisOne);
-      //   thisOne.total_mr = mrMoney.toFixed(2);
-      //   thisOne.total_mz = mzMoney.toFixed(2);
-      //   total.total_tc_pl = total.reduce((t, pre) => {
-      //     return (t * pre.tc_pl).toFixed(2);
-      //   }, 1); //每一项体彩的赔率乘积
-      //   total.total_money =
-      //     total.reduce((t, pre) => {
-      //       return t + Number(pre.total_mr) + Number(pre.total_mz);
-      //     }, 0) + money;
-      // }
       return {
         show: checkText && checkValue,
       };
     };
-    // 所有情况买入 买中金额
-    const totalComputedVar = (item, total, item_i, key) => {
-      let money = isNaN(Number(item.bet_money)) ? 0 : Number(item.bet_money);
-      total.forEach((t, ti) => {
-        let mrMoney = money / (t.hg_pl - 1), //需要买入
-          mzMoney = mrMoney * (t.hg_pl - 1) - money; //买中
-        // console.log("找到所有组合的某一项", thisOne);
-        total[`total_mr_${ti}`] = t.total_mr = mrMoney.toFixed(2);
-        total[`total_mz_${ti}`] = t.total_mz = mzMoney.toFixed(2);
-        total.total_tc_pl = total.reduce((t, pre) => {
-          return (t * pre.tc_pl).toFixed(2);
-        }, 1); //每一项体彩的赔率乘积
-        total.total_money =
-          total.reduce((t, pre, index) => {
-            return t + Number(pre.total_mr) + Number(pre.total_mz);
-          }, 0) + money;
-      });
-
-      return total[`total_${key}_${item_i}`];
-    };
     // 所有情况体彩的获利奖金 毛利率
     const totalComputedMoney = (item, total) => {
-      return (item.bet_money * total.total_tc_pl).toFixed(2);
-    };
-    // 所有情况1 2 3手回报率
-    const totalComputedHuiBao = (item, total, type) => {
-      switch (type) {
-        case 1:
-          return 0.0;
-        case 2:
-          return 0.0;
-        case 3:
-          return (
-            (item.bet_money * total.total_tc_pl - total.total_money) /
-            item.bet_money
-          ).toFixed(2);
-      }
+      let bet_money = computedBetMoney(item).yj;
+      return (bet_money * total.total_tc_pl).toFixed(2);
     };
     // 所有情况组合的净利润
     const totalComputedEarn = (item, total) => {
-      let bet_money = isNaN(Number(item.bet_money))
-        ? 0
-        : Number(item.bet_money); //投注金额
-      let money = totalComputedMoney(item, total),
+      // let bet_money = isNaN(Number(item.bet_money))
+      //   ? 0
+      //   : Number(item.bet_money); //投注金额
+      let bet_money = computedBetMoney(item).zk; //体彩投注金额
+      let money = totalComputedMoney(item, total), //获利
         benjin = total.total_money; //获利
       return (money - bet_money - benjin).toFixed(2);
     };
@@ -568,6 +513,63 @@ export default {
         show: text && text.includes("受") ? "right" : "left",
         text: newText,
       };
+    };
+    // 体彩投注的金额
+    /* 
+      item 每一个方案的数据
+      type true 表示需要按返利计算, false表示不需要返利计算 默认计算返利
+    */
+    const computedBetMoney = (item) => {
+      const { tc_back_money = 0 } = backMoney; //获取设置的体彩 皇冠返数据
+      return {
+        yj: isNaN(Number(item.bet_money)) ? 0 : Number(item.bet_money),
+        zk: isNaN(Number(item.bet_money))
+          ? 0
+          : Number(item.bet_money * (1 - tc_back_money / 100)),
+      };
+    };
+    /* 
+      将所有组合数据进行预处理 
+    */
+    const computedTotalTJ = (item, total) => {
+      const { tc_back_money = 0, hg_back_money = 0 } = backMoney; //获取设置的体彩 皇冠返数据
+      const { zk:money, yj } = computedBetMoney(item);
+      total.forEach((t, ti) => {
+        let mr0 = money / (total[0].hg_pl - 1), //1手买入
+          mz0 =
+            mr0 * (total[0].hg_pl - 1) - money + (mr0 * hg_back_money) / 100; //1手买中需要加上皇冠返利
+
+        let mr1 = (money + mr0 - mz0) / (total[1].hg_pl - 1), //2手买入
+          mz1 = (mr1 * hg_back_money) / 100; //2手买中
+
+        let mrMoney = ti == 0 ? mr0 : mr1, //需要买入
+          mzMoney = ti == 0 ? mz0 : mz1; //买中
+        // console.log("找到所有组合的某一项", mrMoney, total);
+        total[`total_mr_${ti}`] = mrMoney.toFixed(2);
+        t.total_mr = mrMoney.toFixed(2);
+        total[`total_mz_${ti}`] = mzMoney.toFixed(2);
+        total.total_tc_pl = total.reduce((tt, pre) => {
+          return (tt * pre.tc_pl).toFixed(2);
+        }, 1); //每一项体彩的赔率乘积
+        // t.total_tc_pl = total.reduce((tt, pre) => {
+        //   return (tt * pre.tc_pl).toFixed(2);
+        // }, 1);
+        total.total_money =
+          total.reduce((tt, pre) => {
+            return tt + Number(pre.total_mr);
+          }, 0) -
+          (mz0 + mz1);
+        // t.total_money =
+        //   total.reduce((tt, pre) => {
+        //     return tt + Number(pre.total_mr);
+        //   }, 0) + money;
+      });
+      total.huoli = totalComputedMoney(item, total); //获利
+      total.jinglirun = totalComputedEarn(item, total); //净利润
+      total.total_index_33 = (
+        (total.jinglirun / (total.total_money + yj)) *
+        100
+      ).toFixed(2);
     };
     // 随机颜色
     const randomColor = () => {
@@ -624,7 +626,6 @@ export default {
       computedMoney, //根据输入金额计算收益金额
       showTextOrBg, //控制是否显示买入文字
       translateColor, //将16进制颜色变为rgba格式
-      sliceArr, //拆分数组
       showTextPositon,
       randomColor,
       computedVar, //根据输入金额计算买入的钱数
@@ -636,10 +637,7 @@ export default {
       pageChange,
       currentPage,
       showTotalTJ, //判断是否显示所有情况 买入图标
-      totalComputedMoney, //所有组合体彩获利 毛利
-      totalComputedHuiBao, //所有组合1 2 3手回报率
-      totalComputedEarn, //所有组合净利润
-      totalComputedVar, //所有组合买入 买中计算
+      backMoney, //体彩 皇冠返利设置
     };
   },
 };
@@ -683,6 +681,14 @@ $same_fff: #fff;
     span {
       height: 100%;
       background: $same_fff;
+    }
+    .tc_back_span {
+      display: flex;
+      justify-content: space-around;
+      :deep .el-input__inner {
+        color: #ff9800;
+        text-align: center;
+      }
     }
   }
   .content {
