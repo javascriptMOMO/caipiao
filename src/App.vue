@@ -1,5 +1,9 @@
 <template>
   <div class="app">
+    <div>
+      <span>所有方案</span>
+      <span>复合预期方案</span>
+    </div>
     <router-view />
   </div>
 </template>

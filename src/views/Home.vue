@@ -1,9 +1,7 @@
 <template>
   <div class="home">
     <div>
-      <keep-alive>
         <home-page />
-      </keep-alive>
     </div>
   </div>
 </template>

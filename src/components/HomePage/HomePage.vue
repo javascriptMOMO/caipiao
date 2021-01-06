@@ -322,10 +322,23 @@ export default {
       fullscreen: true,
       text: "努力计算中...请稍等...",
     });
+    const synth = window.speechSynthesis;
+    const msg = new SpeechSynthesisUtterance();
+    const speakText = `发现目标!!`;
+    const speakCount = 5; //重复朗读5次
+    // 语音播放函数
+    const speakFuc = (text) => {
+      msg.text = text;
+      msg.lang = "zh-CN";
+      msg.volume = "1";
+      msg.rate = 1;
+      msg.pitch = 1;
+      synth.cancel(msg);
+      synth.speak(msg);
+    };
     // 获取所有的比赛信息
     const getTotalGames_ = async () => {
       const { data } = await getTotalGames();
-      console.log("比赛数据", data);
       if (data.code == 1) {
         router.replace("/");
         return;
@@ -389,12 +402,30 @@ export default {
         item.fuck = Math.max(...total_index_3_list);
       });
       data.data.sort((a, b) => b.fuck - a.fuck);
+      console.log("比赛数据", data.data);
+      let fuckList0 = data.data.filter((f) => f.fuck > 0),
+        fuckList5 = data.data.filter((f) => f.fuck > -5),
+        fuckList10 = data.data.filter((f) => f.fuck > -10); //每项最高的3手赔率数组
+      fuckList10.length &&
+        speakFuc(
+          `3手收益率大于负10方案,共${fuckList10.length}条,大于负5方案${fuckList5.length}条,大于0方案${fuckList0.length}条`
+        );
+
+      console.log(fuckList);
       totalPage.value = data.data.length; //总数据
       let pageData = sliceArr(data.data, pageSize);
       totalGames.value = pageData;
       thisPageGames.value = pageData[0]; //默认显示第一页
     };
+
     getTotalGames_();
+    const timer = setInterval(() => {
+      console.log("更新数据...........");
+      getTotalGames_();
+    }, 1 * 60 * 1000);
+    // setInterval(() => {
+    //   speakFuc(speakText);
+    // }, 5 * 1000);
     onMounted(() => {
       console.log("程序挂载结束");
     });
@@ -480,8 +511,12 @@ export default {
       key-->自定义 有h a 两种 用来判断是体彩还是皇冠  h为皇冠 a为体彩
     */
     const showTotalTJ = (total, ele, item, n, key) => {
-      let textH = total.find((t) => t.hg_buy == "胜" || t.hg_buy == "让胜"),
-        textA = total.find((t) => t.hg_buy == "负" || t.hg_buy == "让负"),
+      let textH = total.find(
+          (t) => (t.hg_buy == "胜" || t.hg_buy == "让胜") && t.hg == n
+        ),
+        textA = total.find(
+          (t) => (t.hg_buy == "负" || t.hg_buy == "让负") && t.hg == n
+        ),
         valueH = total.map((t) => t.hg_pl).includes(ele[`hg_h_${n}`]),
         valueA = total.map((t) => t.hg_pl).includes(ele[`hg_a_${n}`]);
       let checkValue = key === "h" ? valueH : valueA,
@@ -533,7 +568,7 @@ export default {
     */
     const computedTotalTJ = (item, total) => {
       const { tc_back_money = 0, hg_back_money = 0 } = backMoney; //获取设置的体彩 皇冠返数据
-      const { zk:money, yj } = computedBetMoney(item);
+      const { zk: money, yj } = computedBetMoney(item);
       total.forEach((t, ti) => {
         let mr0 = money / (total[0].hg_pl - 1), //1手买入
           mz0 =
