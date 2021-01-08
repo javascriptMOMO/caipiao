@@ -390,28 +390,21 @@ export default {
             total_tj.push([t0, t1]);
           });
         });
-        // console.log(total_tj)
+        console.log(total_tj)
         total_tj.forEach((total) => {
           computedTotalTJ(item, total); //加工数据
         });
 
-        item.total_tj = total_tj.sort(
-          (a, b) => b.total_index_33 - a.total_index_33
-        );
+        total_tj.sort((a, b) => b.total_index_33 - a.total_index_33);
+        item.total_tj = [total_tj[0]]; //取最大的一个展示
         let total_index_3_list = total_tj.map((t) => Number(t.total_index_33));
         item.fuck = Math.max(...total_index_3_list);
       });
       data.data.sort((a, b) => b.fuck - a.fuck);
       console.log("比赛数据", data.data);
-      let fuckList0 = data.data.filter((f) => f.fuck > 0),
-        fuckList5 = data.data.filter((f) => f.fuck > -5),
-        fuckList10 = data.data.filter((f) => f.fuck > -10); //每项最高的3手赔率数组
-      fuckList10.length &&
-        speakFuc(
-          `3手收益率大于负10方案,共${fuckList10.length}条,大于负5方案${fuckList5.length}条,大于0方案${fuckList0.length}条`
-        );
+      let fuckList = data.data.filter((f) => f.fuck > 0); //每项最高的3手赔率数组
+      speakFuc(`3手收益率大于零,${fuckList.length}条`);
 
-      console.log(fuckList);
       totalPage.value = data.data.length; //总数据
       let pageData = sliceArr(data.data, pageSize);
       totalGames.value = pageData;
@@ -567,6 +560,7 @@ export default {
       将所有组合数据进行预处理 
     */
     const computedTotalTJ = (item, total) => {
+      console.log('4444444',total)
       const { tc_back_money = 0, hg_back_money = 0 } = backMoney; //获取设置的体彩 皇冠返数据
       const { zk: money, yj } = computedBetMoney(item);
       total.forEach((t, ti) => {
